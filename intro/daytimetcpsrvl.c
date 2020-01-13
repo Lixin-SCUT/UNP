@@ -1,12 +1,13 @@
-//daytimetcpsrv.c
-//Conded by Lixin on 2020/01/04
+//daytimetcpsrvl.c
+//Code by Lixin on 2020/01/13
 
 #include "unp.h"
 #include <time.h>
 
 int main(int argc,char **argv){
 	int listenfd,connfd;
-	struct sockaddr_in servaddr;
+	socklen_t len;
+	struct sockaddr_in servaddr,cliaddr;
 	char buff[MAXLINE];
 	time_t ticks;
 
@@ -17,13 +18,14 @@ int main(int argc,char **argv){
 	servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
 	servaddr.sin_port=htons(13);
 
-	bind(listenfd,(SA*)&servaddr,sizeof(servaddr));
+	bind(listenfd,(SA *)&servaddr,sizeof(servaddr));
 	
 	listen(listenfd,LISTENQ);
 
 	for(;;){
-		connfd=accept(listenfd,(SA*)NULL,NULL);
-
+		len=sizeof(cliaddr);
+		connfd=accept(listenfd,(SA *)&cliaddr,&len);
+		printf("connection from %s,port %d\n",inet_ntop(AF_INET,&cliaddr.sin_addr,buff,sizeof(buff)),ntohs(cliaddr.sin_port));
 		ticks=time(NULL);
 		snprintf(buff,sizeof(buff),"%.24s\r\n",ctime(&ticks));
 		write(connfd,buff,strlen(buff));
